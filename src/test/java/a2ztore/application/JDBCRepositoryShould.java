@@ -32,7 +32,7 @@ public class JDBCRepositoryShould {
     }
 
     @Test
-    public void insert_a_person_in_table_users() throws SQLException, InterruptedException {
+    public void insert_a_person_in_user_table() throws SQLException {
         repository.add(person);
 
         String sql = format("SELECT * FROM Users WHERE username=\"%s\"", person.name());
@@ -41,6 +41,15 @@ public class JDBCRepositoryShould {
 
         assertThat(resultSet.getString("username")).isEqualTo(person.name());
         assertThat(resultSet.getString("fullname")).isEqualTo(person.fullname());
+    }
+
+    @Test
+    public void get_a_person_in_user_table() throws SQLException {
+        repository.add(person);
+        Person databasePerson = repository.get(this.person.name());
+
+        assertThat(databasePerson.name()).isEqualTo(person.name());
+        assertThat(databasePerson.fullname()).isEqualTo(person.fullname());
     }
 
     @After

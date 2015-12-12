@@ -5,9 +5,11 @@ import a2ztore.view.Repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static a2ztore.application.DatabaseConnector.stablishConnection;
+import static java.lang.String.format;
 
 public class JDBCRepository implements Repository {
 
@@ -27,6 +29,21 @@ public class JDBCRepository implements Repository {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Person get(String personName) {
+        try(Connection connection = stablishConnection()) {
+            String sql = format("SELECT * FROM Users WHERE username=\"%s\"", personName);
+            ResultSet resultSet = connection.createStatement().executeQuery(sql);
+            resultSet.next();
+
+            return new Person(resultSet.getString("username"),
+                              resultSet.getString("fullname"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
