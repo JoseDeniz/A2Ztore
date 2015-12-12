@@ -37,7 +37,7 @@ public class JDBCRepositoryShould {
 
         assertThat(resultSet.next()).isTrue();
         assertThat(resultSet.getString("username")).isEqualTo(person.name());
-        assertThat(resultSet.getString("fullname")).isEqualTo(person.fullname());
+        assertThat(resultSet.getString("surname")).isEqualTo(person.surname());
     }
 
     @Test
@@ -46,7 +46,7 @@ public class JDBCRepositoryShould {
         Person databasePerson = repository.get(person.name());
 
         assertThat(databasePerson.name()).isEqualTo(person.name());
-        assertThat(databasePerson.fullname()).isEqualTo(person.fullname());
+        assertThat(databasePerson.surname()).isEqualTo(person.surname());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class JDBCRepositoryShould {
 
         assertThat(resultSet.next()).isTrue();
         assertThat(resultSet.getString("username")).isEqualTo(newUsername);
-        assertThat(resultSet.getString("fullname")).isEqualTo(person.fullname());
+        assertThat(resultSet.getString("surname")).isEqualTo(person.surname());
     }
 
     @Test

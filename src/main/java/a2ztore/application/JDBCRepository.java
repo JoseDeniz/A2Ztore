@@ -19,12 +19,12 @@ public class JDBCRepository implements Repository {
 
     @Override
     public void add(Person person) {
-        String sql = "INSERT INTO Users (username, fullname) VALUES (?, ?)";
+        String sql = "INSERT INTO Users (username, surname) VALUES (?, ?)";
         try (Connection connection = stablishConnection()) {
             if (connection != null) {
                 PreparedStatement statement = connection.prepareStatement(sql);
                 statement.setString(1, person.name());
-                statement.setString(2, person.fullname());
+                statement.setString(2, person.surname());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -40,7 +40,7 @@ public class JDBCRepository implements Repository {
             resultSet.next();
 
             return new Person(resultSet.getString("username"),
-                    resultSet.getString("fullname"));
+                    resultSet.getString("surname"));
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -74,7 +74,7 @@ public class JDBCRepository implements Repository {
         try (Connection connection = stablishConnection()) {
             String sql = "CREATE TABLE Users (user_id int(11) NOT NULL AUTO_INCREMENT," +
                                              "username varchar(45) NOT NULL," +
-                                             "fullname varchar(45) NOT NULL," +
+                                             "surname varchar(45) NOT NULL," +
                                              "PRIMARY KEY (user_id));";
             if (connection != null)
                 connection.createStatement().executeUpdate(sql);
