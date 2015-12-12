@@ -6,6 +6,7 @@ public interface Repository {
 
     void add(Person person);
 
-    Person get(String personName);
+    Person get(String username);
 
+    void delete(String username);
 }

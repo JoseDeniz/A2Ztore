@@ -17,9 +17,7 @@ public class JDBCRepositoryShould {
     /**
      * TODO List:
      *
-     * - Get a person
      * - Update a person
-     * - Remove a person
      */
 
     private Person person;
@@ -50,6 +48,17 @@ public class JDBCRepositoryShould {
 
         assertThat(databasePerson.name()).isEqualTo(person.name());
         assertThat(databasePerson.fullname()).isEqualTo(person.fullname());
+    }
+
+    @Test
+    public void delete_a_person_in_user_table() throws SQLException {
+        repository.add(person);
+        repository.delete(person.name());
+
+        String sql = format("SELECT * FROM Users WHERE username=\"%s\"", person.name());
+        ResultSet resultSet = stablishConnection().createStatement().executeQuery(sql);
+
+        assertThat(resultSet.next()).isFalse();
     }
 
     @After
