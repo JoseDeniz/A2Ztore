@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/A2Ztore.iml" filepath="$PROJECT_DIR$/A2Ztore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RestService/RestService.iml" filepath="$PROJECT_DIR$/RestService/RestService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/kernel/kernel.iml" filepath="$PROJECT_DIR$/kernel/kernel.iml" />
     </modules>
   </component>
 </project>
