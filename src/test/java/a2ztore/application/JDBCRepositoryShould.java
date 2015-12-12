@@ -18,7 +18,10 @@ public class JDBCRepositoryShould {
     /**
      * TODO List:
      *
-     * - Update a person
+     * - User must have name, surname, password, list of bought products
+     * - DB must update any field in any table
+     *
+     * - [Refactor] Implement a Try<T> class to handle with exceptions and try / catch blocks
      */
 
     private Person person;
