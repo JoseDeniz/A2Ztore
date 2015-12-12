@@ -8,5 +8,8 @@ public interface Repository {
 
     Person get(String username);
 
+    void update(String oldUsername, String newUsername);
+
     void delete(String username);
+
 }

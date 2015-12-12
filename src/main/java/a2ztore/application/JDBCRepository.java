@@ -48,12 +48,23 @@ public class JDBCRepository implements Repository {
     }
 
     @Override
-    public void delete(String username) {
-        try(Connection connection = stablishConnection()) {
-            String sql = format("DELETE FROM Users WHERE username=\"%s\"", username);
+    public void update(String oldUsername, String newUsername) {
+        try (Connection connection = stablishConnection()) {
+            String sql = format("UPDATE Users SET username=\"%s\" WHERE username=\"%s\"", newUsername, oldUsername);
             if (connection != null) {
                 connection.createStatement().executeUpdate(sql);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void delete(String username) {
+        try(Connection connection = stablishConnection()) {
+            String sql = format("DELETE FROM Users WHERE username=\"%s\"", username);
+            if (connection != null)
+                connection.createStatement().executeUpdate(sql);
         } catch (SQLException e) {
             e.printStackTrace();
         }

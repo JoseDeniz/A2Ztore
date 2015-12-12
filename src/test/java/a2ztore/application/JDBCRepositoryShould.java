@@ -33,7 +33,7 @@ public class JDBCRepositoryShould {
     @Test
     public void insert_a_person_in_user_table() throws SQLException {
         repository.add(person);
-        ResultSet resultSet = executeSelectStatement();
+        ResultSet resultSet = executeSelectStatement(person.name());
 
         assertThat(resultSet.next()).isTrue();
         assertThat(resultSet.getString("username")).isEqualTo(person.name());
@@ -50,11 +50,23 @@ public class JDBCRepositoryShould {
     }
 
     @Test
+    public void update_the_name_of_the_user() throws SQLException {
+        repository.add(person);
+        String newUsername = "Phillip J";
+        repository.update(person.name(), newUsername);
+        ResultSet resultSet = executeSelectStatement(newUsername);
+
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getString("username")).isEqualTo(newUsername);
+        assertThat(resultSet.getString("fullname")).isEqualTo(person.fullname());
+    }
+
+    @Test
     public void delete_a_person_in_user_table() throws SQLException {
         repository.add(person);
         repository.delete(person.name());
 
-        ResultSet resultSet = executeSelectStatement();
+        ResultSet resultSet = executeSelectStatement(person.name());
         assertThat(resultSet.next()).isFalse();
     }
 
@@ -64,8 +76,8 @@ public class JDBCRepositoryShould {
         statement.executeUpdate("DROP TABLE Users");
     }
 
-    private ResultSet executeSelectStatement() throws SQLException {
-        String sql = format("SELECT * FROM Users WHERE username=\"%s\"", person.name());
+    private ResultSet executeSelectStatement(String username) throws SQLException {
+        String sql = format("SELECT * FROM Users WHERE username=\"%s\"", username);
         return stablishConnection().createStatement().executeQuery(sql);
     }
 
