@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import static a2ztore.application.DatabaseConnector.stablishConnection;
 import static java.lang.String.format;
@@ -32,11 +33,9 @@ public class JDBCRepositoryShould {
     @Test
     public void insert_a_person_in_user_table() throws SQLException {
         repository.add(person);
+        ResultSet resultSet = executeSelectStatement();
 
-        String sql = format("SELECT * FROM Users WHERE username=\"%s\"", person.name());
-        ResultSet resultSet = stablishConnection().createStatement().executeQuery(sql);
-        resultSet.next();
-
+        assertThat(resultSet.next()).isTrue();
         assertThat(resultSet.getString("username")).isEqualTo(person.name());
         assertThat(resultSet.getString("fullname")).isEqualTo(person.fullname());
     }
@@ -44,7 +43,7 @@ public class JDBCRepositoryShould {
     @Test
     public void get_a_person_in_user_table() throws SQLException {
         repository.add(person);
-        Person databasePerson = repository.get(this.person.name());
+        Person databasePerson = repository.get(person.name());
 
         assertThat(databasePerson.name()).isEqualTo(person.name());
         assertThat(databasePerson.fullname()).isEqualTo(person.fullname());
@@ -55,15 +54,19 @@ public class JDBCRepositoryShould {
         repository.add(person);
         repository.delete(person.name());
 
-        String sql = format("SELECT * FROM Users WHERE username=\"%s\"", person.name());
-        ResultSet resultSet = stablishConnection().createStatement().executeQuery(sql);
-
+        ResultSet resultSet = executeSelectStatement();
         assertThat(resultSet.next()).isFalse();
     }
 
     @After
     public void tearDown() throws SQLException {
-        stablishConnection().createStatement().executeUpdate("DROP TABLE Users");
+        Statement statement = stablishConnection().createStatement();
+        statement.executeUpdate("DROP TABLE Users");
+    }
+
+    private ResultSet executeSelectStatement() throws SQLException {
+        String sql = format("SELECT * FROM Users WHERE username=\"%s\"", person.name());
+        return stablishConnection().createStatement().executeQuery(sql);
     }
 
 }
