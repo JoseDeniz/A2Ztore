@@ -15,12 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JDBCRepositoryShould {
 
-    private Person person;
-
-    public static final String DB_URL = "jdbc:mysql://localhost:3306/a2ztoreDB";
-    public static final String USERNAME = "root";
-    public static final String PASSWORD = "secret";
-
     /**
      * TODO List:
      *
@@ -29,27 +23,34 @@ public class JDBCRepositoryShould {
      * - Remove a person
      */
 
+    private Person person;
+    private JDBCRepository repository;
+
     @Before
     public void setUp() {
         person = new Person("Phillip", "Fry");
+        repository = new JDBCRepository();
     }
 
     @Test
     public void insert_a_person_in_table_users() throws SQLException, InterruptedException {
-        JDBCRepository repository = new JDBCRepository();
         repository.add(person);
 
-        Connection connection = getConnection(DB_URL, USERNAME, PASSWORD);
-        String sql = "SELECT * FROM Users WHERE username=" + format("\"%s\"", person.name());
-        ResultSet resultSet = connection.createStatement().executeQuery(sql);
+        String sql = format("SELECT * FROM Users WHERE username=\"%s\"", person.name());
+        ResultSet resultSet = stablishConnection().createStatement().executeQuery(sql);
         resultSet.next();
+        
         assertThat(resultSet.getString("username")).isEqualTo(person.name());
         assertThat(resultSet.getString("fullname")).isEqualTo(person.fullname());
     }
 
     @After
     public void tearDown() throws SQLException {
-        Connection connection = getConnection(DB_URL, USERNAME, PASSWORD);
-        connection.createStatement().executeUpdate("DROP TABLE Users");
+        stablishConnection().createStatement().executeUpdate("DROP TABLE Users");
     }
+
+    private Connection stablishConnection() throws SQLException {
+        return getConnection("jdbc:mysql://localhost:3306/a2ztoreDB", "root", "secret");
+    }
+
 }
