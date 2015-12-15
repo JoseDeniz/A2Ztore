@@ -1,6 +1,6 @@
 package a2ztore.application;
 
-import a2ztore.model.Person;
+import a2ztore.model.User;
 import a2ztore.view.Repository;
 import javaslang.control.Try;
 import org.junit.After;
@@ -27,53 +27,52 @@ public class JDBCRepositoryShould {
      * - [Refactor] Implement a Try<T> class to handle with exceptions and try / catch blocks
      */
 
-    private Person person;
+    private User user;
     private Repository repository;
 
     @Before
     public void setUp() {
-        person = new Person("Phillip", "Fry");
+        user = new User("Phillip", "Fry");
         repository = new JDBCRepository();
     }
 
     @Test
     public void insert_a_person_in_user_table() throws SQLException {
-        repository.add(person);
-
-        ResultSet resultSet = executeSelectStatement(person.name());
+        repository.add(user);
+        ResultSet resultSet = executeSelectStatement(user.name());
 
         assertThat(resultSet.next()).isTrue();
-        assertThat(resultSet.getString("username")).isEqualTo(person.name());
-        assertThat(resultSet.getString("surname")).isEqualTo(person.surname());
+        assertThat(resultSet.getString("username")).isEqualTo(user.name());
+        assertThat(resultSet.getString("surname")).isEqualTo(user.surname());
     }
 
     @Test
     public void get_a_person_in_user_table() throws SQLException {
-        repository.add(person);
-        Person databasePerson = repository.get(person.name());
+        repository.add(user);
+        User databaseUser = repository.get(user.name());
 
-        assertThat(databasePerson.name()).isEqualTo(person.name());
-        assertThat(databasePerson.surname()).isEqualTo(person.surname());
+        assertThat(databaseUser.name()).isEqualTo(user.name());
+        assertThat(databaseUser.surname()).isEqualTo(user.surname());
     }
 
     @Test
     public void update_the_name_of_the_user() throws SQLException {
-        repository.add(person);
+        repository.add(user);
         String newUsername = "Phillip J";
-        repository.update(person.name(), newUsername);
+        repository.update(user.name(), newUsername);
         ResultSet resultSet = executeSelectStatement(newUsername);
 
         assertThat(resultSet.next()).isTrue();
         assertThat(resultSet.getString("username")).isEqualTo(newUsername);
-        assertThat(resultSet.getString("surname")).isEqualTo(person.surname());
+        assertThat(resultSet.getString("surname")).isEqualTo(user.surname());
     }
 
     @Test
     public void delete_a_person_in_user_table() throws SQLException {
-        repository.add(person);
-        repository.delete(person.name());
+        repository.add(user);
+        repository.delete(user.name());
 
-        ResultSet resultSet = executeSelectStatement(person.name());
+        ResultSet resultSet = executeSelectStatement(user.name());
         assertThat(resultSet.next()).isFalse();
     }
 

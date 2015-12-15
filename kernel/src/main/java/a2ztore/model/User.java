@@ -1,11 +1,11 @@
 package a2ztore.model;
 
-public class Person {
+public class User {
 
     private final String name;
     private final String surname;
 
-    public Person(String name, String surname) {
+    public User(String name, String surname) {
         this.name = name;
         this.surname = surname;
     }

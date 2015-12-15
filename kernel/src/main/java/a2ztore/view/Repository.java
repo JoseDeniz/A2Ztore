@@ -1,12 +1,12 @@
 package a2ztore.view;
 
-import a2ztore.model.Person;
+import a2ztore.model.User;
 
 public interface Repository {
 
-    void add(Person person);
+    void add(User user);
 
-    Person get(String username);
+    User get(String username);
 
     void update(String oldUsername, String newUsername);
 

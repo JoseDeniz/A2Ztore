@@ -1,6 +1,6 @@
 package a2ztore.application;
 
-import a2ztore.model.Person;
+import a2ztore.model.User;
 import a2ztore.view.Repository;
 import javaslang.control.Try;
 
@@ -16,11 +16,11 @@ public class JDBCRepository implements Repository {
     }
 
     @Override
-    public void add(Person person) {
+    public void add(User user) {
         tryConnection()
                 .mapTry(this::prepareInsertUserStatement)
-                .andThen(setNameOf(person))
-                .andThen(setSurnameOf(person))
+                .andThen(setNameOf(user))
+                .andThen(setSurnameOf(user))
                 .andThen(PreparedStatement::executeUpdate);
     }
 
@@ -32,21 +32,21 @@ public class JDBCRepository implements Repository {
         return "INSERT INTO Users (username, surname) VALUES (?, ?)";
     }
 
-    private Try.CheckedConsumer<PreparedStatement> setNameOf(Person person) {
-        return statement -> statement.setString(1, person.name());
+    private Try.CheckedConsumer<PreparedStatement> setNameOf(User user) {
+        return statement -> statement.setString(1, user.name());
     }
 
-    private Try.CheckedConsumer<PreparedStatement> setSurnameOf(Person person) {
-        return statement -> statement.setString(2, person.surname());
+    private Try.CheckedConsumer<PreparedStatement> setSurnameOf(User user) {
+        return statement -> statement.setString(2, user.surname());
     }
 
     @Override
-    public Person get(String username) {
+    public User get(String username) {
         return tryConnection()
                     .mapTry(Connection::createStatement)
                     .mapTry(statement -> statement.executeQuery(selectUsersWithSame(username)))
                     .andThen(ResultSet::next)
-                    .mapTry(this::toPerson)
+                    .mapTry(this::toUser)
                     .get();
     }
 
@@ -54,10 +54,9 @@ public class JDBCRepository implements Repository {
         return format("SELECT * FROM Users WHERE username=\"%s\"", username);
     }
 
-
-    private Person toPerson(ResultSet resultSet) throws SQLException {
-        return new Person(resultSet.getString("username"),
-                          resultSet.getString("surname"));
+    private User toUser(ResultSet resultSet) throws SQLException {
+        return new User(resultSet.getString("username"),
+                        resultSet.getString("surname"));
     }
 
     @Override
