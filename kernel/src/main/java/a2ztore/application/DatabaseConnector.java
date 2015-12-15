@@ -1,7 +1,7 @@
 package a2ztore.application;
 
 import java.sql.Connection;
-import java.sql.SQLException;
+import javaslang.control.Try;
 
 import static java.sql.DriverManager.getConnection;
 
@@ -11,12 +11,7 @@ public class DatabaseConnector {
     private static final String USER = "root";
     private static final String PASSWORD = "secret";
 
-    public static Connection stablishConnection() {
-        try {
-            return getConnection(DB_URL, USER, PASSWORD);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static Try<Connection> tryConnection() {
+        return Try.of(() -> getConnection(DB_URL, USER, PASSWORD));
     }
 }
