@@ -2,13 +2,11 @@ package a2ztore.application;
 
 import a2ztore.model.Person;
 import a2ztore.view.Repository;
+import javaslang.control.Try;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
-import static a2ztore.application.DatabaseConnector.stablishConnection;
+import static a2ztore.application.DatabaseConnector.tryConnection;
 import static java.lang.String.format;
 
 public class JDBCRepository implements Repository {
@@ -19,69 +17,79 @@ public class JDBCRepository implements Repository {
 
     @Override
     public void add(Person person) {
-        String sql = "INSERT INTO Users (username, surname) VALUES (?, ?)";
-        try (Connection connection = stablishConnection()) {
-            if (connection != null) {
-                PreparedStatement statement = connection.prepareStatement(sql);
-                statement.setString(1, person.name());
-                statement.setString(2, person.surname());
-                statement.executeUpdate();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        tryConnection()
+                .mapTry(this::prepareInsertUserStatement)
+                .andThen(setNameOf(person))
+                .andThen(setSurnameOf(person))
+                .andThen(PreparedStatement::executeUpdate);
+    }
+
+    private PreparedStatement prepareInsertUserStatement(Connection connection) {
+        return Try.of(() -> connection.prepareStatement(insertUserQuery())).get();
+    }
+
+    private String insertUserQuery() {
+        return "INSERT INTO Users (username, surname) VALUES (?, ?)";
+    }
+
+    private Try.CheckedConsumer<PreparedStatement> setNameOf(Person person) {
+        return statement -> statement.setString(1, person.name());
+    }
+
+    private Try.CheckedConsumer<PreparedStatement> setSurnameOf(Person person) {
+        return statement -> statement.setString(2, person.surname());
     }
 
     @Override
     public Person get(String username) {
-        try(Connection connection = stablishConnection()) {
-            String sql = format("SELECT * FROM Users WHERE username=\"%s\"", username);
-            ResultSet resultSet = connection.createStatement().executeQuery(sql);
-            resultSet.next();
+        return tryConnection()
+                    .mapTry(Connection::createStatement)
+                    .mapTry(statement -> statement.executeQuery(selectUsersWithSame(username)))
+                    .andThen(ResultSet::next)
+                    .mapTry(this::toPerson)
+                    .get();
+    }
 
-            return new Person(resultSet.getString("username"),
-                    resultSet.getString("surname"));
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
+    private String selectUsersWithSame(String username) {
+        return format("SELECT * FROM Users WHERE username=\"%s\"", username);
+    }
+
+
+    private Person toPerson(ResultSet resultSet) throws SQLException {
+        return new Person(resultSet.getString("username"),
+                          resultSet.getString("surname"));
     }
 
     @Override
     public void update(String oldUsername, String newUsername) {
-        try (Connection connection = stablishConnection()) {
-            String sql = format("UPDATE Users SET username=\"%s\" WHERE username=\"%s\"", newUsername, oldUsername);
-            if (connection != null) {
-                connection.createStatement().executeUpdate(sql);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        String updatePerson = format("UPDATE Users SET username=\"%s\" WHERE username=\"%s\"", newUsername, oldUsername);
+        executeQuery(updatePerson);
     }
 
     @Override
     public void delete(String username) {
-        try(Connection connection = stablishConnection()) {
-            String sql = format("DELETE FROM Users WHERE username=\"%s\"", username);
-            if (connection != null)
-                connection.createStatement().executeUpdate(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        executeQuery(deleteUserWithSame(username));
+    }
+
+    private String deleteUserWithSame(String username) {
+        return format("DELETE FROM Users WHERE username=\"%s\"", username);
     }
 
     private void createUsersTable() {
-        try (Connection connection = stablishConnection()) {
-            String sql = "CREATE TABLE Users (user_id int(11) NOT NULL AUTO_INCREMENT," +
-                                             "username varchar(45) NOT NULL," +
-                                             "surname varchar(45) NOT NULL," +
-                                             "PRIMARY KEY (user_id));";
-            if (connection != null)
-                connection.createStatement().executeUpdate(sql);
+        executeQuery(createTableUsers());
+    }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    private String createTableUsers() {
+        return "CREATE TABLE Users (user_id int(11) NOT NULL AUTO_INCREMENT," +
+                                    "username varchar(45) NOT NULL," +
+                                    "surname varchar(45) NOT NULL," +
+                                    "PRIMARY KEY (user_id));";
+    }
+
+    private Try<Statement> executeQuery(String sql) {
+        return tryConnection()
+                    .mapTry(Connection::createStatement)
+                    .andThen(statement -> statement.executeUpdate(sql));
     }
 
 }

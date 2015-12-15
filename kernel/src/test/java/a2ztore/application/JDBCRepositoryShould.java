@@ -1,15 +1,18 @@
 package a2ztore.application;
 
 import a2ztore.model.Person;
+import a2ztore.view.Repository;
+import javaslang.control.Try;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static a2ztore.application.DatabaseConnector.stablishConnection;
+import static a2ztore.application.DatabaseConnector.tryConnection;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,7 +28,7 @@ public class JDBCRepositoryShould {
      */
 
     private Person person;
-    private JDBCRepository repository;
+    private Repository repository;
 
     @Before
     public void setUp() {
@@ -36,6 +39,7 @@ public class JDBCRepositoryShould {
     @Test
     public void insert_a_person_in_user_table() throws SQLException {
         repository.add(person);
+
         ResultSet resultSet = executeSelectStatement(person.name());
 
         assertThat(resultSet.next()).isTrue();
@@ -74,14 +78,30 @@ public class JDBCRepositoryShould {
     }
 
     @After
-    public void tearDown() throws SQLException {
-        Statement statement = stablishConnection().createStatement();
-        statement.executeUpdate("DROP TABLE Users");
+    public void tearDown() {
+        tryConnection()
+                .mapTry(Connection::createStatement)
+                .andThen(this::dropUsersTable)
+                .get();
     }
 
-    private ResultSet executeSelectStatement(String username) throws SQLException {
-        String sql = format("SELECT * FROM Users WHERE username=\"%s\"", username);
-        return stablishConnection().createStatement().executeQuery(sql);
+    private int dropUsersTable(Statement statement) {
+        return Try.of(() -> statement.executeUpdate("DROP TABLE Users")).get();
+    }
+
+    private ResultSet executeSelectStatement(String username) {
+        return tryConnection()
+                    .mapTry(Connection::createStatement)
+                    .mapTry(statement -> getUsers(statement, username))
+                    .get();
+    }
+
+    private ResultSet getUsers(Statement statement, String username) {
+        return Try.of(() -> statement.executeQuery(selectUsersWithSame(username))).get();
+    }
+
+    private String selectUsersWithSame(String username) {
+        return format("SELECT * FROM Users WHERE username=\"%s\"", username);
     }
 
 }
